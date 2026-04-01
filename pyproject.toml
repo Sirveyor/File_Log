@@ -1,7 +1,26 @@
 [project]
 name = "file-log"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Python package for logging file operations and system information for 
+reporting file activity for analysis and monitoring purposes."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = ["sqlalchemy", "psutil", "pywin32"]
+authors = [{ name = "Covert Nelson", email = "sirveyor.code@gmail.com" }]
+license = "MIT"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Programming Language::  Python:: 3.13",
+
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.pylint.typecheck]
+extension-pkg-list = ["sqlalchemy", "psutil", "pywin32"]

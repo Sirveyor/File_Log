@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Optional
 import logging
+from datetime import datetime, timedelta
 
 from app.db.connection import get_session
 from app.db.queries import (
@@ -16,11 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class DetectedActivity:
-    app_name: str
-    exe_path: str
+class InspectionResults:
+    app_name: Optional[str]
+    exe_path: Optional[str]
     file_path: Optional[str]  # None means no file detected
-    extension: Optional[str]
+    file_extension: Optional[str]
+    process_id: Optional[int]
+    window_title: Optional[str]
 
 
 class SessionTracker:
@@ -29,14 +32,17 @@ class SessionTracker:
     Decides when to open/close sessions based on detected activity.
     """
 
-    def __init__(self):
+    def __init__(self, idle_timeout_seconds: int = 300):
         self.current_file_path: Optional[str] = None
         self.current_session_id: Optional[int] = None
+        self.current_app_id: Optional[int] = None
+        self.last_activity_time: Optional[datetime] = None
+        self.idle_timeout = timedelta(seconds=idle_timeout_seconds)
 
     # ------------------------------------------------------------
     # PUBLIC ENTRY POINT
     # ------------------------------------------------------------
-    def handle_activity(self, activity: DetectedActivity):
+    def handle_activity(self, activity: InspectionResults):
         """
         Main entry point called by the watcher.
         """
@@ -75,7 +81,7 @@ class SessionTracker:
         self.current_session_id = None
         self.current_file_path = None
 
-    def _open_new_session(self, activity: DetectedActivity):
+    def _open_new_session(self, activity: InspectionResults):
         logger.info("Opening new session for file: %s.", activity.file_path)
 
         with get_session() as db:
@@ -88,3 +94,4 @@ class SessionTracker:
 
             self.current_session_id = session.id
             self.current_file_path = activity.file_path
+            self.current_app_id = app.id
